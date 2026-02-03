@@ -3,6 +3,14 @@ import threading
 import queue
 import time
 import re
+import os
+
+
+# 运行时可配置参数（环境变量覆盖默认值）
+# - RAPFI_BOARD_SIZE：棋盘尺寸，默认 15（对应 START 15）
+# - RAPFI_TIMEOUT_TURN：单步思考时间，单位 ms，默认 10000
+BOARD_SIZE = int(os.getenv("RAPFI_BOARD_SIZE", "15"))
+TIMEOUT_TURN_MS = int(os.getenv("RAPFI_TIMEOUT_TURN", "10000"))
 
 
 class RapfiEngine:
@@ -23,12 +31,13 @@ class RapfiEngine:
             bufsize=1
         )
 
-        self.send("START 15")
+        # 使用可配置的棋盘尺寸（默认为 15）
+        self.send(f"START {BOARD_SIZE}")
         # 吃掉启动阶段可能的若干行输出，避免污染后续读取
         self._drain_startup()
 
-        # 限制思考时间（3秒）
-        self.send("INFO timeout_turn 3000")
+        # 限制思考时间（默认 10000 ms，可通过环境变量覆盖）
+        self.send(f"INFO timeout_turn {TIMEOUT_TURN_MS}")
 
     def restart(self):
         try:

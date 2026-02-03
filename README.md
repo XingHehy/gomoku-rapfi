@@ -99,15 +99,20 @@ docker build -t gomoku-rapfi .
 ### 3.2 运行容器
 
 ```bash
-docker run -d --name gomoku-rapfi -p 8801:8801 gomoku-rapfi
+docker run -d --name gomoku-rapfi -p 8801:8801 -e RAPFI_TIMEOUT_TURN=10000 -e RAPFI_BOARD_SIZE=15 gomoku-rapfi
 ```
+
+参数说明：
+
+- `-e RAPFI_TIMEOUT_TURN=10000`：设置 Rapfi 单步思考时间，单位 ms（可按需调整，例如 3000）
+- `-e RAPFI_BOARD_SIZE=15`：棋盘尺寸（目前一般保持 15）
 
 ---
 
 ## 5. 其它
 
 - 引擎并发：`EnginePool` 默认根据 CPU 核心数创建多个 Rapfi 实例，以支持并发请求。
-- 如果需要修改思考时间，可调整 `engine_pool.py` 中的 `INFO timeout_turn 3000`。
+- 如果需要修改思考时间，推荐通过环境变量 `RAPFI_TIMEOUT_TURN` 配置（单位 ms），或者自行调整 `Rapfi-engine/config.toml`。
 - 引擎参数配置：请自行调整 `Rapfi-engine/config.toml`（不同版本/平台的可用配置项以 Rapfi 官方说明为准）。
 
 如遇到引擎无法启动、模型缺失等问题，优先检查 `Rapfi-engine` 目录是否完整以及当前系统架构是否支持对应二进制文件。
