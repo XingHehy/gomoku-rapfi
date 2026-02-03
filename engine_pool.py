@@ -9,8 +9,10 @@ import os
 # 运行时可配置参数（环境变量覆盖默认值）
 # - RAPFI_BOARD_SIZE：棋盘尺寸，默认 15（对应 START 15）
 # - RAPFI_TIMEOUT_TURN：单步思考时间，单位 ms，默认 10000
+# - RAPFI_READ_EXTRA_SEC：Python 侧读取结果时额外预留的 buffer 秒数，默认 5
 BOARD_SIZE = int(os.getenv("RAPFI_BOARD_SIZE", "15"))
 TIMEOUT_TURN_MS = int(os.getenv("RAPFI_TIMEOUT_TURN", "10000"))
+READ_EXTRA_SEC = float(os.getenv("RAPFI_READ_EXTRA_SEC", "5"))
 
 
 class RapfiEngine:
@@ -72,11 +74,15 @@ class RapfiEngine:
             if line.upper() == "OK":
                 break
 
-    def _read_bestmove_xy(self, max_lines: int = 200, max_seconds: float = 5.0):
+    def _read_bestmove_xy(self, max_lines: int = 200, max_seconds: float | None = None):
         """
         读取引擎输出，直到拿到形如 'x,y' 的坐标。
         允许中间夹杂 OK/INFO 等杂讯行。
         """
+        # 如果未显式指定超时，则按引擎思考时间 + 预留 buffer
+        if max_seconds is None:
+            max_seconds = TIMEOUT_TURN_MS / 1000.0 + READ_EXTRA_SEC
+
         start = time.monotonic()
         last_nonempty = ""
         pat = re.compile(r"^\s*(-?\d+)\s*,\s*(-?\d+)\s*$")
